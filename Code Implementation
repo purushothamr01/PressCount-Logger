@@ -1,0 +1,46 @@
+ //💻 Code Implementation
+
+//The code uses an interrupt-based approach to detect button presses while preventing false triggers using a debounce mechanism.
+
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+#define BUTTON_PIN 2
+
+// Initialize LCD (16x2) with I2C address 0x27
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+volatile int buttonCount = 0;
+unsigned long lastDebounceTime = 0;
+const int debounceDelay = 50;
+
+void setup() {
+    pinMode(BUTTON_PIN, INPUT_PULLUP);
+    Serial.begin(9600);
+
+    lcd.begin();
+    lcd.backlight();
+    lcd.setCursor(0, 0);
+    lcd.print("Button Count:");
+
+    attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), buttonPressed, FALLING);
+}
+
+void loop() {
+    Serial.print("Button Pressed: ");
+    Serial.println(buttonCount);
+
+    lcd.setCursor(0, 1);
+    lcd.print("Count: ");
+    lcd.print(buttonCount);
+    lcd.print("  ");
+
+    delay(500);
+}
+
+void buttonPressed() {
+    if (millis() - lastDebounceTime > debounceDelay) {
+        buttonCount++;
+        lastDebounceTime = millis();
+    }
+}
